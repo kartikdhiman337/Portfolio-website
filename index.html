@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kartik Dhiman | Full Stack Elite</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;700;800&display=swap" rel="stylesheet">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="background-radial"></div>
+
+<header class="dock-container">
+    <nav class="floating-dock">
+        <a href="#home" class="dock-item"><i class='bx bx-home-alt-2'></i><span>Home</span></a>
+        <a href="#services" class="dock-item"><i class='bx bx-cube'></i><span>Skills</span></a>
+        <a href="#projects" class="dock-item"><i class='bx bx-code-block'></i><span>Work</span></a>
+        <a href="#contact" class="dock-item contact-trigger"><i class='bx bx-envelope'></i><span>Contact</span></a>
+    </nav>
+</header>
+
+<main class="wrapper">
+    <section class="hero-section" id="home">
+        <div class="chip">Full Stack Engineer</div>
+        <h1 class="hero-title">Engineering <br><span class="glitch-text">Digital Perfection</span></h1>
+        <p class="hero-sub">I build high-end web architectures for startups and global brands. Clean code, scalable systems, elite design.</p>
+        <div class="action-row">
+            <a href="#projects" class="glow-btn">View My Ecosystem</a>
+            <a href="#contact" class="ghost-btn">Start a Project</a>
+        </div>
+    </section>
+
+    <section class="bento-section" id="services">
+        <div class="section-label centered">Capabilities</div>
+        <div class="bento-container">
+            <div class="bento-card border-beam main-card">
+                <i class='bx bxl-react'></i>
+                <h2>Modern Frontend</h2>
+                <p>Next.js, Framer Motion, and high-end animations for immersive UX.</p>
+            </div>
+            <div class="bento-card">
+                <i class='bx bx-data'></i>
+                <h3>Backend Architecture</h3>
+                <p>Node.js & PostgreSQL systems built for speed.</p>
+            </div>
+            <div class="bento-card">
+                <i class='bx bx-rocket'></i>
+                <h3>Optimization</h3>
+                <p>99+ PageSpeed score and SEO excellence.</p>
+            </div>
+            
+            <div class="bento-card placeholder-card">
+                <i class='bx bx-plus-circle'></i>
+                <p>Your Next Skill Here</p>
+            </div>
+
+            <div class="bento-card wide">
+                <div class="stack-flex">
+                    <i class='bx bxl-python'></i>
+                    <i class='bx bxl-typescript'></i>
+                    <i class='bx bxl-nodejs'></i>
+                    <i class='bx bxl-tailwind-css'></i>
+                    <i class='bx bxl-docker'></i>
+                    <i class='bx bxl-aws'></i>
+                </div>
+                <p>Advanced Tech Stack</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="work-section" id="projects">
+        <div class="section-label centered">Showcase</div>
+        <div class="work-grid">
+            <div class="project-wrap">
+                <div class="project-display project-1"></div>
+                <div class="project-detail">
+                    <h3>Job recommendation app</h3>
+                    <p>Python, json, streamlit, streamlit_lottie, import request</p>
+                    <a href="https://digital-rozgaar-app-b7vvb8qqwrpje8yzddcay7.streamlit.app/">Explore Case <i class='bx bx-right-arrow-alt'></i></a>
+                </div>
+            </div>
+
+            <div class="project-wrap">
+                <div class="project-display project-2"></div>
+                <div class="project-detail">
+                    <h3>Astrology aap</h3>
+                    <p>Html, css, JavaScript</p>
+                    <p>Python, numpy, pandas, matplotlib, seaborn, streamlit, CSV file</p>
+                    <a href="https://divine-destiny-astrology.vercel.app/">Explore Case <i class='bx bx-right-arrow-alt'></i></a>
+                </div>
+            </div>
+
+            <div class="project-wrap placeholder-wrap">
+                <div class="project-display"></div>
+                <div class="project-detail">
+                    <h3>Upcoming Project</h3>
+                    <p>Development in progress...</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="contact-section" id="contact">
+        <div class="contact-glass">
+            <div class="contact-header">
+                <h2>Let's build something <br><span>Legacy Worthy.</span></h2>
+                <p id="form-status" style="margin-top: 15px; font-weight: 700;"></p>
+            </div>
+            <form id="contact-form" class="contact-form">
+                <div class="row">
+                    <input type="text" name="user_name" id="user_name" placeholder="Full Name" required>
+                    <input type="email" name="user_email" id="user_email" placeholder="Email Address" required>
+                </div>
+                <textarea name="message" id="user_message" placeholder="Tell me about your vision..." rows="5" required></textarea>
+                
+                <input type="checkbox" name="botcheck" style="display:none">
+
+                <button type="submit" id="submit-btn" class="glow-btn full">
+                    <span id="btn-text">Send Message</span>
+                    <i class='bx bx-loader-alt bx-spin' id="loader" style="display:none"></i>
+                </button>
+            </form>
+        </div>
+    </section>
+</main>
+
+<footer class="main-footer">
+    <div class="footer-content">
+        <div class="footer-brand">
+            <div class="logo">K<span>D</span></div>
+            <p>Solving complex problems with elegant code and superior design.</p>
+        </div>
+        
+        <div class="footer-links">
+            <div class="link-group">
+                <h4>Navigation</h4>
+                <a href="#home">Home</a>
+                <a href="#services">Skills</a>
+                <a href="#projects">Work</a>
+            </div>
+            <div class="link-group">
+                <h4>Connect</h4>
+                <a href="https://www.linkedin.com/in/kartik-dhiman-/">LinkedIn</a>
+                <a href="https://github.com/kartikdhiman337">GitHub</a>
+                <a href="https://www.instagram.com/kartikk._.dhiman?igsh=ZnU2ajI1ajBkMDBn">Instagram</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="footer-bottom">
+        <p>© 2026 KARTIK DHIMAN | ALL RIGHTS RESERVED</p>
+        <div class="footer-socials">
+            <a href="https://www.linkedin.com/in/kartik-dhiman-/"><i class='bx bxl-linkedin'></i></a>
+            <a href="https://github.com/kartikdhiman337"><i class='bx bxl-github'></i></a>
+            <a href="https://www.instagram.com/kartikk._.dhiman?igsh=ZnU2ajI1ajBkMDBn"><i class='bx bxl-instagram'></i></a>
+        </div>
+    </div>
+</footer>
+
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
