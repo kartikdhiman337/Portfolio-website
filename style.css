@@ -76,10 +76,17 @@ section { padding: 100px 10%; }
 .project-display { height: 400px; background-color: #111; background-size: cover; background-position: center; transition: 0.5s; }
 
 /* YAHAN APNI IMAGES ADD KAREIN */
-.project-1 { background-image: url('p2.jpg'); background-size: cover; background-position: center; }
-.project-2 { background-image: url('p1.jpg'); background-size: cover; background-position: center; }
+.project-display { 
+    height: 350px; 
+    width: 100%; 
+    background-size: contain; 
+    background-repeat: no-repeat; 
+    background-position: center; 
+    background-color: #0a0a0a;
+}
+.project-1 { background-image: url('p2.jpg'); }
+.project-2 { background-image: url('p1.jpg'); }
 
-.placeholder-wrap { opacity: 0.4; border: 1px dashed var(--border); }
 .project-detail { padding: 40px; }
 .project-detail a { color: var(--accent); text-decoration: none; font-weight: 700; margin-top: 15px; display: block; }
 
