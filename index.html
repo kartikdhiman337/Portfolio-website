@@ -1,173 +1,1188 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kartik Dhiman | Full Stack Elite</title>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;700;800&display=swap" rel="stylesheet">
-    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Kartik Dhiman — Full-Stack Developer | Shopify, WordPress & WebGL</title>
+  <meta name="description" content="Kartik Dhiman is a full-stack developer from Delhi building web apps, bespoke Shopify storefronts, custom WordPress/CMS platforms and spatial WebGL experiences.">
+  <meta name="theme-color" content="#fafafa">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=JetBrains+Mono:wght@400;500;700&family=Syne:wght@500;700;800&display=swap" rel="stylesheet">
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+
+  <style>
+    :root {
+      --paper: #f9f7f2;
+      --paper-2: #f1ede3;
+      --paper-3: #e6e0d2;
+      --ink: #1f1e1c;
+      --graphite: #3b3835;
+      --mute: #6b665f;
+      --red: #b93826;
+      --brass: #c39851;
+      --f-display: 'Syne', system-ui, sans-serif;
+      --f-hand: 'Caveat', cursive;
+      --f-mono: 'JetBrains Mono', ui-monospace, monospace;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: auto; }
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: var(--f-mono);
+      font-size: 14px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+    body.locked { overflow: hidden; height: 100vh; }
+    ::selection { background: rgba(185, 56, 38, .2); color: var(--red); }
+    a { color: inherit; }
+    :focus-visible { outline: 2px dashed var(--red); outline-offset: 3px; }
+
+    /* ---------- WebGL layer + paper finish ---------- */
+    #gl { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 0; display: block; }
+    .grain, .vignette { position: fixed; inset: 0; pointer-events: none; z-index: 2; }
+    .grain { opacity: .5; mix-blend-mode: multiply;
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .3  0 0 0 0 .27  0 0 0 0 .22  0 0 0 .13 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>"); }
+    .vignette { background: radial-gradient(ellipse at center, transparent 62%, rgba(60, 50, 35, .16) 100%); }
+
+    /* ---------- hand-drawn (wobbly) borders ---------- */
+    .sk { position: relative; isolation: isolate; }
+    .sk::before {
+      content: ""; position: absolute; inset: 0; z-index: -1;
+      background: var(--paper); border: 2px solid var(--ink);
+      box-shadow: 5px 6px 0 rgba(31, 30, 28, .9);
+      filter: url(#wobble);
+    }
+    .sk.soft::before { box-shadow: 3px 4px 0 rgba(31,30,28,.85); }
+    .sk.flat::before { background: var(--paper-2); box-shadow: none; border-width: 1.6px; }
+
+    /* ---------- top bar ---------- */
+    .topbar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 40;
+      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+      padding: 16px clamp(16px, 3vw, 40px);
+      pointer-events: none;
+    }
+    .topbar > * { pointer-events: auto; }
+    .logo { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+    .logo-mark { width: 46px; height: 46px; display: grid; place-items: center; font-family: var(--f-hand); font-weight: 700; font-size: 28px; }
+    .logo-text b { display: block; font-family: var(--f-display); font-weight: 800; letter-spacing: -.01em; font-size: 15px; line-height: 1.1; }
+    .logo-text span { font-size: 9px; letter-spacing: .14em; text-transform: uppercase; color: var(--mute); display: flex; align-items: center; gap: 6px; }
+    .dot { width: 6px; height: 6px; border-radius: 50%; background: #1f9d5a; display: inline-block; position: relative; }
+    .dot::after { content: ""; position: absolute; inset: -4px; border-radius: 50%; border: 1px solid #1f9d5a; animation: ping 1.8s ease-out infinite; }
+    @keyframes ping { from { transform: scale(.4); opacity: .9; } to { transform: scale(1.4); opacity: 0; } }
+
+    .nav { display: none; padding: 5px; gap: 2px; align-items: center; }
+    .nav a { padding: 7px 12px; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; text-decoration: none; position: relative; transition: color .2s; }
+    .nav a:hover { color: var(--red); }
+    .nav a.on { color: var(--red); }
+    .nav a.on::after { content: ""; position: absolute; left: 12px; right: 12px; bottom: 3px; height: 6px;
+      background: no-repeat center/100% 100% url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 6' preserveAspectRatio='none'><path d='M1 4 C 20 1, 40 6, 60 3 S 90 2, 99 4' fill='none' stroke='%23b93826' stroke-width='2' stroke-linecap='round'/></svg>"); }
+    @media (min-width: 900px) { .nav { display: flex; } }
+
+    .clock { padding: 6px 12px; text-align: right; font-size: 10px; line-height: 1.35; display: none; }
+    .clock b { display: block; font-size: 12px; }
+    .clock span { color: var(--red); font-weight: 700; letter-spacing: .08em; }
+    @media (min-width: 640px) { .clock { display: block; } }
+
+    /* ---------- bottom HUD ---------- */
+    .hud { position: fixed; left: clamp(16px, 3vw, 40px); right: clamp(16px, 3vw, 40px); bottom: 18px; z-index: 40;
+      display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; pointer-events: none; }
+    .hud > * { pointer-events: auto; }
+    .tele { padding: 10px 14px; max-width: 460px; display: none; }
+    .tele small { display: flex; justify-content: space-between; gap: 16px; font-size: 9px; letter-spacing: .12em; text-transform: uppercase; color: var(--mute); }
+    .tele small b { color: var(--red); }
+    .tele p { margin: 2px 0 0; font-family: var(--f-hand); font-size: 21px; line-height: 1.1; color: var(--graphite); }
+    @media (min-width: 700px) { .tele { display: block; } }
+    .walk { padding: 10px 18px; font: 700 11px var(--f-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--paper); background: var(--ink); border: 2px solid var(--ink); cursor: pointer; box-shadow: 4px 4px 0 var(--brass); transition: transform .15s, background .15s; margin-left: auto; }
+    .walk:hover { background: var(--red); border-color: var(--red); transform: translate(-2px, -2px); }
+
+    /* ---------- page / sections ---------- */
+    main { position: relative; z-index: 5; }
+    .sec { position: relative; min-height: 100vh; display: flex; align-items: center; padding: 110px clamp(16px, 5vw, 80px); pointer-events: none; }
+    .sec :is(.panel, a, button, summary, .card, details) { pointer-events: auto; }
+    .room { min-height: 125vh; }
+    .room .panel { padding: clamp(18px, 2.2vw, 30px); }
+    .room .panel h2 { font-size: clamp(22px, 2.5vw, 34px); }
+    .room .sub { font-size: 22px; margin-bottom: 12px !important; }
+    .room .cards { gap: 14px; }
+    .room .card-body { padding: 11px 14px 13px; }
+    .room .card h3 { font-size: 18px; }
+    .room.door-left { justify-content: flex-end; }
+    .room.door-right { justify-content: flex-start; }
+
+    .hand { font-family: var(--f-hand); font-weight: 600; color: var(--red); font-size: 24px; line-height: 1; }
+    .kicker { display: inline-flex; gap: 10px; align-items: center; font-size: 11px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--red); }
+    .kicker::before { content: ""; width: 34px; height: 2px; background: var(--red); }
+    h1, h2, h3 { font-family: var(--f-display); margin: 0; letter-spacing: -.02em; }
+
+    /* hero */
+    .hero { align-items: flex-end; padding-bottom: 19vh; }
+    .hero-in { max-width: 980px; text-shadow: 0 0 22px var(--paper), 0 0 8px var(--paper); }
+    .hero h1 { font-size: clamp(52px, 10.5vw, 150px); line-height: .88; font-weight: 800; text-transform: uppercase; margin: 18px 0 20px; }
+    .hero h1 em { font-style: normal; color: transparent; -webkit-text-stroke: 2px var(--ink); }
+    .hero p.lead { font-size: clamp(14px, 1.5vw, 18px); max-width: 620px; color: var(--graphite); margin: 0 0 28px; }
+    .row { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; }
+    .btn { display: inline-flex; align-items: center; gap: 10px; padding: 14px 24px; font: 700 12px var(--f-mono); letter-spacing: .12em; text-transform: uppercase; text-decoration: none; cursor: pointer; border: 2px solid var(--ink); background: var(--ink); color: var(--paper); box-shadow: 5px 5px 0 var(--brass); transition: transform .18s cubic-bezier(.16,1,.3,1), box-shadow .18s, background .18s; }
+    .btn:hover { transform: translate(-3px, -3px); box-shadow: 8px 8px 0 var(--ink); background: var(--red); border-color: var(--red); }
+    .btn:active { transform: translate(2px, 2px); box-shadow: 2px 2px 0 var(--ink); }
+    .btn.ghost { background: var(--paper); color: var(--ink); box-shadow: 5px 5px 0 var(--ink); }
+    .btn.ghost:hover { background: var(--paper-3); color: var(--ink); border-color: var(--ink); }
+    .cue { display: flex; align-items: center; gap: 8px; }
+    .cue svg { width: 46px; height: 60px; animation: bob 1.8s ease-in-out infinite; }
+    @keyframes bob { 50% { transform: translateY(8px); } }
+
+    /* panels */
+    .panel { padding: clamp(22px, 3vw, 40px); width: min(620px, 100%); transition: opacity .8s ease, transform .8s cubic-bezier(.16,1,.3,1); }
+    .panel.wide { width: min(780px, 100%); }
+    .reveal { opacity: 0; transform: translateY(36px) rotate(.4deg); }
+    .reveal.in { opacity: 1; transform: none; }
+    .panel h2 { font-size: clamp(26px, 3.2vw, 44px); font-weight: 800; line-height: 1; margin: 12px 0 10px; text-transform: uppercase; }
+    .panel p { margin: 0 0 14px; color: var(--graphite); }
+    .sub { font-family: var(--f-hand); font-size: 25px; line-height: 1.1; color: var(--red); margin: 0 0 18px !important; }
+    .about { justify-content: flex-start; }
+    .stack { display: flex; flex-wrap: wrap; gap: 8px; margin: 18px 0 0; padding: 0; list-style: none; }
+    .stack li { padding: 4px 10px; border: 1.5px solid var(--ink); font-size: 11px; font-weight: 600; background: var(--paper-2); transition: transform .15s, background .15s; }
+    .stack li:hover { transform: rotate(-2deg) translateY(-2px); background: var(--brass); }
+    .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 22px; }
+    .stats div { padding: 10px; border-top: 2px solid var(--ink); }
+    .stats b { display: block; font-family: var(--f-display); font-size: 30px; line-height: 1; }
+    .stats span { font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--mute); }
+
+    .badge { display: inline-block; padding: 3px 10px; background: var(--red); color: #fff; font-size: 10px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
+    .head-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .head-row .hand { font-size: 22px; }
+
+    /* project cards */
+    .cards { display: grid; gap: 18px; margin-top: 8px; }
+    .card { position: relative; display: grid; grid-template-columns: 1fr; border: 2px solid var(--ink); background: var(--paper-2); box-shadow: 5px 5px 0 var(--ink); transition: transform .25s cubic-bezier(.16,1,.3,1), box-shadow .25s; overflow: hidden; }
+    .card:hover { transform: translate(-3px, -3px); box-shadow: 8px 8px 0 var(--ink); }
+    .art { position: relative; height: 96px; border-bottom: 2px solid var(--ink); background: var(--paper); cursor: crosshair; overflow: hidden; }
+    .art svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+    .art .color { -webkit-mask-image: radial-gradient(circle max(var(--r, 1px), 1px) at var(--x, 50%) var(--y, 50%), #000 55%, transparent 100%);
+                  mask-image: radial-gradient(circle max(var(--r, 1px), 1px) at var(--x, 50%) var(--y, 50%), #000 55%, transparent 100%); }
+    .art .hint { position: absolute; right: 8px; bottom: 4px; font-family: var(--f-hand); font-size: 17px; color: var(--mute); transition: opacity .3s; }
+    .art:hover .hint { opacity: 0; }
+    .card-body { padding: 14px 16px 16px; }
+    .cat { display: inline-block; background: var(--ink); color: var(--paper); padding: 2px 8px; font-size: 9px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; margin-bottom: 8px; }
+    .card h3 { font-size: 20px; line-height: 1.1; margin-bottom: 6px; }
+    .card p { font-size: 12.5px; margin-bottom: 10px; }
+    .tags { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 14px; }
+    .tags span { border: 1px solid rgba(31,30,28,.45); background: var(--paper); padding: 1px 7px; font-size: 10px; font-weight: 600; }
+    .visit { display: inline-flex; gap: 8px; align-items: center; padding: 8px 14px; background: var(--red); color: #fff; text-decoration: none; font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; box-shadow: 2px 2px 0 var(--ink); transition: background .2s, transform .2s; }
+    .visit:hover { background: var(--ink); transform: translate(-1px, -1px); }
+
+    /* faq */
+    .faq { justify-content: center; }
+    details { border-top: 2px solid var(--ink); padding: 0; }
+    details:last-of-type { border-bottom: 2px solid var(--ink); }
+    summary { list-style: none; cursor: pointer; padding: 15px 4px; display: flex; justify-content: space-between; gap: 16px; align-items: center; font-family: var(--f-display); font-weight: 700; font-size: 17px; }
+    summary::-webkit-details-marker { display: none; }
+    summary::after { content: "+"; font-family: var(--f-mono); font-size: 22px; color: var(--red); transition: transform .25s; }
+    details[open] summary::after { transform: rotate(45deg); }
+    details p { padding: 0 4px 16px; margin: 0; }
+
+    /* contact */
+    .contact { justify-content: center; text-align: center; min-height: 100vh; }
+    .contact .panel { margin: 0 auto; width: min(780px, 94vw); }
+    .contact h2 {
+      font-size: clamp(34px, 5.8vw, 76px);
+      line-height: .98;
+      font-weight: 800;
+      letter-spacing: -.02em;
+      text-transform: uppercase;
+      margin: 16px 0 12px;
+      word-break: keep-all;
+    }
+    .contact h2 em {
+      font-style: normal;
+      color: transparent;
+      -webkit-text-stroke: 2.2px var(--ink);
+      transition: color .25s ease, -webkit-text-stroke .25s ease;
+      display: inline-block;
+    }
+    .contact h2 em:hover {
+      color: var(--red);
+      -webkit-text-stroke-color: var(--red);
+    }
+    .contact-desc {
+      font-size: 13.5px;
+      color: var(--graphite);
+      max-width: 520px;
+      margin: 0 auto 18px;
+      line-height: 1.5;
+    }
+    .links { justify-content: center; margin: 20px 0 8px; flex-wrap: wrap; gap: 12px; }
+    .fine { font-size: 11px; color: var(--mute); margin-top: 20px; }
+
+    /* WhatsApp & Email contact buttons */
+    .btn.whatsapp { background: #1faa59; border-color: var(--ink); color: #fff; box-shadow: 4px 4px 0 var(--ink); }
+    .btn.whatsapp:hover { background: #158844; border-color: var(--ink); box-shadow: 7px 7px 0 var(--ink); transform: translate(-2px,-2px); }
+    .btn.email { background: var(--red); border-color: var(--ink); color: #fff; box-shadow: 4px 4px 0 var(--ink); }
+    .btn.email:hover { background: #962818; border-color: var(--ink); box-shadow: 7px 7px 0 var(--ink); transform: translate(-2px,-2px); }
+    .btn svg { vertical-align: middle; flex-shrink: 0; }
+
+    /* Toast notification */
+    .toast-msg {
+      position: fixed;
+      bottom: 74px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--ink);
+      color: var(--paper);
+      padding: 10px 22px;
+      border: 2px solid var(--ink);
+      font-family: var(--f-mono);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: .05em;
+      border-radius: 4px;
+      box-shadow: 4px 4px 0 var(--brass);
+      z-index: 1000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .25s ease, transform .25s cubic-bezier(.16,1,.3,1);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .toast-msg.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* ---------- paper-tear intro ---------- */
+    #tear { position: fixed; inset: 0; z-index: 100; cursor: pointer; }
+    #tear .half { position: absolute; inset: 0; filter: drop-shadow(0 6px 10px rgba(40, 30, 15, .35)); will-change: transform; }
+    #tear .sheet { position: absolute; inset: 0; background: var(--paper); background-image: radial-gradient(rgba(60,50,35,.07) 1px, transparent 0); background-size: 5px 5px; }
+    #tear .content { position: absolute; inset: 0; padding: clamp(18px, 3vw, 44px); display: flex; flex-direction: column; justify-content: space-between; }
+    .t-top, .t-bot { display: flex; justify-content: space-between; align-items: center; gap: 16px; font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--mute); border-color: var(--ink); }
+    .t-top { border-bottom: 2px solid var(--ink); padding-bottom: 12px; }
+    .t-bot { border-top: 2px solid var(--ink); padding-top: 12px; }
+    .t-top b, .t-bot b { color: var(--ink); }
+    .t-top .loc { color: var(--red); font-weight: 700; }
+    .t-mid { text-align: center; max-width: 960px; margin: 0 auto; }
+    .t-mid h1 { font-size: clamp(44px, 9.5vw, 140px); line-height: .9; font-weight: 800; text-transform: uppercase; margin: 14px 0; }
+    .t-mid p { font-family: var(--f-hand); font-size: clamp(22px, 2.6vw, 34px); line-height: 1.1; color: var(--graphite); margin: 0 auto 26px; max-width: 700px; }
+    .pill { display: inline-block; padding: 4px 12px; border: 1.5px solid var(--red); color: var(--red); font-size: 11px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
+    .t-hint { font-size: 11px; color: var(--mute); margin-top: 14px; }
+    kbd { padding: 1px 7px; border: 1.5px solid var(--ink); background: var(--paper-2); font: 600 11px var(--f-mono); }
+    #tear .btn-fake { pointer-events: none; }
+
+    .no-webgl #gl { display: none; }
+    .no-webgl body, body.no-webgl { background: linear-gradient(var(--paper), var(--paper-2)); }
+
+    @media (max-width: 760px) {
+      .topbar { background: rgba(249,247,242,.94); border-bottom: 2px solid var(--ink); padding: 10px 14px; }
+      .logo-text span { display: none; }
+      .logo-mark { width: 38px; height: 38px; font-size: 24px; }
+      .walk { padding: 8px 12px; font-size: 10px; }
+      .hud { bottom: 12px; }
+      .art { height: 84px; }
+      .sec { padding: 96px 14px 90px; }
+      .room.door-left, .room.door-right { justify-content: center; }
+      .panel { background: transparent; }
+      .sk::before { background: rgba(249, 247, 242, .96); }
+      .stats b { font-size: 24px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .reveal { opacity: 1; transform: none; }
+      * { animation: none !important; }
+    }
+  </style>
 </head>
-<body>
+<body class="locked">
 
-<div class="background-radial"></div>
+  <!-- hand-drawn wobble filter used by every sketch border -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <filter id="wobble" x="-5%" y="-5%" width="110%" height="110%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.018" numOctaves="2" seed="4" result="n"/>
+        <feDisplacementMap in="SourceGraphic" in2="n" scale="5" xChannelSelector="R" yChannelSelector="G"/>
+      </filter>
+    </defs>
+  </svg>
 
-<header class="dock-container">
-    <nav class="floating-dock">
-        <a href="#home" class="dock-item"><i class='bx bx-home-alt-2'></i><span>Home</span></a>
-        <a href="#services" class="dock-item"><i class='bx bx-cube'></i><span>Skills</span></a>
-        <a href="#projects" class="dock-item"><i class='bx bx-code-block'></i><span>Work</span></a>
-        <a href="#contact" class="dock-item contact-trigger"><i class='bx bx-envelope'></i><span>Contact</span></a>
+  <canvas id="gl"></canvas>
+  <div class="grain"></div>
+  <div class="vignette"></div>
+
+  <!-- TOP BAR -->
+  <header class="topbar">
+    <a href="#home" class="logo" aria-label="Kartik Dhiman — home">
+      <span class="logo-mark sk soft">KD</span>
+      <span class="logo-text"><b>KARTIK DHIMAN</b><span><i class="dot"></i>Full-Stack &amp; WebGL Developer</span></span>
+    </a>
+    <nav class="nav sk soft" aria-label="Primary">
+      <a href="#home" data-s="home">Home</a>
+      <a href="#about" data-s="about">About</a>
+      <a href="#room-1" data-s="projects">Projects</a>
+      <a href="#faq" data-s="faq">FAQ</a>
+      <a href="#contact" data-s="contact">Contact</a>
     </nav>
-</header>
+    <div class="clock sk soft"><b id="clock">00:00:00</b><span>DELHI · IST</span></div>
+  </header>
 
-<main class="wrapper">
-    <section class="hero-section" id="home">
-        <div class="chip">Full Stack Engineer</div>
-        <h1 class="hero-title">Engineering <br><span class="glitch-text">Digital Perfection</span></h1>
-        <p class="hero-sub">I build high-end web architectures for startups and global brands. Clean code, scalable systems, elite design.</p>
-        <div class="action-row">
-            <a href="#projects" class="glow-btn">View My Ecosystem</a>
-            <a href="#contact" class="ghost-btn">Start a Project</a>
+  <!-- PAGE -->
+  <main id="page">
+    <section id="home" class="sec hero" data-s="home">
+      <div class="hero-in">
+        <span class="kicker">Folio / 2026 · Sketchbook Edition</span>
+        <h1>Kartik<br><em>Dhiman</em></h1>
+        <p class="lead">Engineering digital reality through full-stack architecture, bespoke Shopify systems, custom CMS foundations and spatial WebGL. Delhi, India.</p>
+        <div class="row">
+          <a class="btn" href="#room-1">See the work ➔</a>
+          <a class="btn ghost" href="#contact">Say hello</a>
+          <div class="cue hand">
+            walk in
+            <svg viewBox="0 0 46 60" fill="none" stroke="#b93826" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M22 4 C 16 18, 28 28, 22 52"/><path d="M10 40 L22 54 L35 38"/></svg>
+          </div>
         </div>
+      </div>
     </section>
 
-    <section class="bento-section" id="services">
-        <div class="section-label centered">Capabilities</div>
-        <div class="bento-container">
-            <div class="bento-card border-beam main-card">
-                <i class='bx bxl-react'></i>
-                <h2>Modern Frontend</h2>
-                <p>Next.js, Framer Motion, and high-end animations for immersive UX.</p>
-            </div>
-            <div class="bento-card">
-                <i class='bx bx-data'></i>
-                <h3>Backend Architecture</h3>
-                <p>Node.js & PostgreSQL systems built for speed.</p>
-            </div>
-            <div class="bento-card">
-                <i class='bx bx-rocket'></i>
-                <h3>Optimization</h3>
-                <p>99+ PageSpeed score and SEO excellence.</p>
-            </div>
-            
-            <div class="bento-card placeholder-card">
-                <i class='bx bx-plus-circle'></i>
-                <p>Your Next Skill Here</p>
-            </div>
-
-            <div class="bento-card wide">
-                <div class="stack-flex">
-                    <i class='bx bxl-python'></i>
-                    <i class='bx bxl-typescript'></i>
-                    <i class='bx bxl-nodejs'></i>
-                    <i class='bx bxl-tailwind-css'></i>
-                    <i class='bx bxl-docker'></i>
-                    <i class='bx bxl-aws'></i>
-                </div>
-                <p>Advanced Tech Stack</p>
-            </div>
+    <section id="about" class="sec about" data-s="about">
+      <div class="panel sk reveal">
+        <span class="kicker">About me</span>
+        <h2>Code that feels<br>hand-made</h2>
+        <p class="sub">"build it, sketch it, ship it."</p>
+        <p>I'm Kartik, a full-stack developer working from Delhi. I build modern web applications and machine-learning powered tools, high-converting Shopify storefronts with hand-written Liquid, custom WordPress / CMS platforms, and immersive WebGL experiences like the corridor you're walking through right now.</p>
+        <p>Every project below is genuine work with real client deployments, handcrafted for speed, reliability and precision.</p>
+        <ul class="stack" aria-label="Toolkit">
+          <li>Python</li><li>Next.js</li><li>Node.js</li><li>PostgreSQL</li><li>Docker</li><li>Prisma</li><li>Shopify Liquid</li><li>WordPress / PHP</li><li>WooCommerce</li><li>Three.js</li><li>GSAP</li><li>Tailwind CSS</li>
+        </ul>
+        <div class="stats">
+          <div><b>04</b><span>Galleries</span></div>
+          <div><b>08</b><span>Live projects</span></div>
+          <div><b>IST</b><span>Global delivery</span></div>
         </div>
+      </div>
     </section>
 
-    <section class="work-section" id="projects">
-        <div class="section-label centered">Showcase</div>
-        <div class="work-grid">
-            <div class="project-wrap">
-                <div class="project-display project-1"></div>
-                <div class="project-detail">
-                    <h3>Job recommendation app</h3>
-                    <p>Python, json, streamlit, streamlit_lottie, import request</p>
-                    <a href="https://digital-rozgaar-app-b7vvb8qqwrpje8yzddcay7.streamlit.app/">Explore Case <i class='bx bx-right-arrow-alt'></i></a>
-                </div>
-            </div>
+    <div id="rooms"></div>
 
-            <div class="project-wrap">
-                <div class="project-display project-2"></div>
-                <div class="project-detail">
-                    <h3>Astrology website</h3>
-                    <p>Html, css, JavaScript</p>
-                    <a href="https://divine-destiny-astrology.vercel.app/">Explore Case <i class='bx bx-right-arrow-alt'></i></a>
-                </div>
-            </div>
-
-            <div class="project-wrap">
-                <div class="project-display project-3"></div>
-                <div class="project-detail">
-                    <h3>Restaurant website</h3>
-                    <p>Html, css, JavaScript</p>
-                    <a href="https://restaurant-website-theta-two.vercel.app/">Explore Case <i class='bx bx-right-arrow-alt'></i></a>
-                </div>
-            </div>
-
-            <div class="project-wrap placeholder-wrap">
-                <div class="project-display"></div>
-                <div class="project-detail">
-                    <h3>Upcoming Project</h3>
-                    <p>Development in progress...</p>
-                </div>
-            </div>
-        </div>
+    <section id="faq" class="sec faq" data-s="faq">
+      <div class="panel wide sk reveal">
+        <span class="kicker">Frequently asked</span>
+        <h2>Good questions</h2>
+        <p class="sub">things people ask at the door</p>
+        <details>
+          <summary>What kind of projects do you take on?</summary>
+          <p>Modern web applications, custom Shopify storefronts, WordPress and CMS builds, and full-stack systems with Node.js, PostgreSQL and Docker, plus WebGL work when a project calls for it.</p>
+        </details>
+        <details>
+          <summary>Are you available for freelance and contract work?</summary>
+          <p>Yes. I take on freelance commissions, from frontend overhauls to complete full-stack platforms. Reach out on LinkedIn or GitHub below.</p>
+        </details>
+        <details>
+          <summary>Which Shopify and WordPress work have you done?</summary>
+          <p>Shopify: Pattani Opticians and The Souled Store. WordPress: 13 Maxi Cabs and Puffin Packaging. Every project in the galleries links to its live site.</p>
+        </details>
+        <details>
+          <summary>Where are you based, and do you work with clients abroad?</summary>
+          <p>I'm in Delhi, India (IST), and deliver to clients globally.</p>
+        </details>
+        <details>
+          <summary>How do I get in touch?</summary>
+          <p>Message me on <a href="https://www.linkedin.com/in/kartik-dhiman-/" target="_blank" rel="noopener noreferrer">LinkedIn</a>, drop an email at <a href="mailto:kartikdhiman337@gmail.com">kartikdhiman337@gmail.com</a>, ping me on <a href="https://wa.me/918882246983?text=Hi%20Kartik%2C%20saw%20your%20portfolio%20and%20would%20love%20to%20connect!" target="_blank" rel="noopener noreferrer">WhatsApp</a>, or look through the code on <a href="https://github.com/kartikdhiman337" target="_blank" rel="noopener noreferrer">GitHub</a>.</p>
+        </details>
+      </div>
     </section>
 
-    <section class="contact-section" id="contact">
-        <div class="contact-glass">
-            <div class="contact-header">
-                <h2>Let's build something <br><span>Legacy Worthy.</span></h2>
-                <p id="form-status" style="margin-top: 15px; font-weight: 700;"></p>
-            </div>
-            <form id="contact-form" class="contact-form">
-                <div class="row">
-                    <input type="text" name="user_name" id="user_name" placeholder="Full Name" required>
-                    <input type="email" name="user_email" id="user_email" placeholder="Email Address" required>
-                </div>
-                <textarea name="message" id="user_message" placeholder="Tell me about your vision..." rows="5" required></textarea>
-                
-                <input type="checkbox" name="botcheck" style="display:none">
+    <footer id="contact" class="sec contact" data-s="contact">
+      <div class="panel wide sk reveal">
+        <span class="kicker">The end of the corridor</span>
+        <h2>LET'S BUILD<br><em>SOMETHING</em></h2>
+        <p class="sub">knock twice, I'll answer.</p>
+        <p class="contact-desc">Ready to craft something exceptional? Reach out directly via WhatsApp, Email, or LinkedIn.</p>
+        <div class="row links">
+          <a class="btn" href="https://github.com/kartikdhiman337" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
+          <a class="btn ghost" href="https://www.linkedin.com/in/kartik-dhiman-/" target="_blank" rel="noopener noreferrer">LinkedIn ↗</a>
+          <a class="btn whatsapp" href="https://wa.me/918882246983?text=Hi%20Kartik%2C%20saw%20your%20portfolio%20and%20would%20love%20to%20connect!" target="_blank" rel="noopener noreferrer">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+            WhatsApp
+          </a>
+          <a class="btn email" id="email-btn" href="mailto:kartikdhiman337@gmail.com?subject=Project%20Inquiry%20-%20Kartik%20Dhiman" target="_blank" rel="noopener noreferrer">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            Email Me
+          </a>
+        </div>
+        <p class="fine">© 2026 Kartik Dhiman · Delhi, India · Handcrafted with Three.js &amp; GSAP</p>
+      </div>
+    </footer>
+  </main>
 
-                <button type="submit" id="submit-btn" class="glow-btn full">
-                    <span id="btn-text">Send Message</span>
-                    <i class='bx bx-loader-alt bx-spin' id="loader" style="display:none"></i>
-                </button>
-            </form>
-        </div>
-    </section>
-</main>
+  <!-- TOAST NOTIFICATION -->
+  <div id="toast-msg" class="toast-msg" aria-live="polite">✓ Email copied: kartikdhiman337@gmail.com</div>
 
-<footer class="main-footer">
-    <div class="footer-content">
-        <div class="footer-brand">
-            <div class="logo">K<span>D</span></div>
-            <p>Solving complex problems with elegant code and superior design.</p>
-        </div>
-        
-        <div class="footer-links">
-            <div class="link-group">
-                <h4>Navigation</h4>
-                <a href="#home">Home</a>
-                <a href="#services">Skills</a>
-                <a href="#projects">Work</a>
-            </div>
-            <div class="link-group">
-                <h4>Connect</h4>
-                <a href="https://www.linkedin.com/in/kartik-dhiman-/">LinkedIn</a>
-                <a href="https://github.com/kartikdhiman337">GitHub</a>
-                <a href="https://www.instagram.com/kartikk._.dhiman?igsh=ZnU2ajI1ajBkMDBn">Instagram</a>
-            </div>
-        </div>
+  <!-- BOTTOM HUD -->
+  <div class="hud">
+    <div class="tele sk soft" aria-live="polite">
+      <small><b>Corridor telemetry</b><span id="loc">0.0 m</span></small>
+      <p id="narr">"Scroll to walk the gallery. Four doors await."</p>
     </div>
-    
-    <div class="footer-bottom">
-        <p>© 2026 KARTIK DHIMAN | ALL RIGHTS RESERVED</p>
-        <div class="footer-socials">
-            <a href="https://www.linkedin.com/in/kartik-dhiman-/"><i class='bx bxl-linkedin'></i></a>
-            <a href="https://github.com/kartikdhiman337"><i class='bx bxl-github'></i></a>
-            <a href="https://www.instagram.com/kartikk._.dhiman?igsh=ZnU2ajI1ajBkMDBn"><i class='bx bxl-instagram'></i></a>
-        </div>
-    </div>
-</footer>
+    <button class="walk" id="walk" type="button">Auto-walk ▶</button>
+  </div>
 
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
-<script src="script.js"></script>
+  <!-- PAPER TEAR INTRO -->
+  <div id="tear" role="dialog" aria-label="Intro — tear the paper to enter">
+    <div class="half top"><div class="sheet"></div><div class="content"></div></div>
+    <div class="half bot"><div class="sheet"></div><div class="content"></div></div>
+  </div>
+
+  <template id="tear-tpl">
+    <div class="t-top"><div><b>FOLIO / 2026</b> &nbsp;·&nbsp; SKETCHBOOK EDITION</div><div class="loc">DELHI, INDIA [IST]</div></div>
+    <div class="t-mid">
+      <span class="pill">Hand-drawn 3D corridor · Real client work</span>
+      <h1>Kartik Dhiman</h1>
+      <p>"Engineering digital reality through full-stack architecture, bespoke Shopify systems, custom CMS foundations and spatial WebGL."</p>
+      <span class="btn btn-fake">✂ Tear the paper &amp; enter</span>
+      <div class="t-hint">Click anywhere or press <kbd>Enter</kbd> / <kbd>Space</kbd></div>
+    </div>
+    <div class="t-bot"><div>Four galleries: Web Apps · Shopify · WordPress · Full Stack</div><b>GENUINE WORK</b></div>
+  </template>
+
+  <script>
+  /* =====================================================================
+     DATA — your four galleries (content unchanged)
+     ===================================================================== */
+  const CHAMBERS = [
+    {
+      id: 'web-apps', roomNumber: 'ROOM 01', title: 'Modern Web Applications & AI Engines',
+      short: 'Web Apps', subtitle: 'High-Performance Frontend & Intelligent Algorithms',
+      side: -1, signTitle: 'ROOM 01 · WEB APPS',
+      narration: '"Room 01: modern web apps & machine-learning engines."',
+      artTheme: 'ai', artTitle: 'AI & VECTOR ENGINE', artSubtitle: 'Next.js 14 • Python 3.11 • Tensor Embeddings', artAccent: '#00B8D4',
+      projects: [
+        { title: 'Restaurant Website for the Foodies', category: 'Python 3.11 / Streamlit / ML Vector Search',
+          desc: 'Automated employment discovery ecosystem matching candidate resumes against career postings via dynamic JSON vector weighting.',
+          link: 'https://restaurant-website-theta-two.vercel.app/', tags: ['HTML', 'CSS3 Transitions', 'javascript', 'Vector Search', 'REST API'] },
+        { title: 'Divine Destiny Celestial Astrology', category: 'Frontend Engineering / Trigonometric SVG / ES6',
+          desc: 'Cosmic esoteric horoscope platform with dynamic celestial transit charts, zero bloat, and sub-second load times.',
+          link: 'https://divine-destiny-astrology.vercel.app/', tags: ['Vanilla JavaScript', 'SVG Mathematics', 'CSS3 Transitions', 'Vercel Edge'] }
+      ]
+    },
+    {
+      id: 'shopify-commerce', roomNumber: 'ROOM 02', title: 'Shopify E-Commerce & Liquid Themes',
+      short: 'Shopify', subtitle: 'Bespoke Liquid Code, Cart Drawers & High-Conversion UX',
+      side: 1, signTitle: 'ROOM 02 · SHOPIFY',
+      narration: '"Room 02: custom Shopify Liquid storefronts and cart architecture."',
+      artTheme: 'shopify', artTitle: 'HAUTE COUTURE STOREFRONTS', artSubtitle: 'Custom Liquid Sections • Ajax Cart • Algolia Search', artAccent: '#D4A017',
+      projects: [
+        { title: 'Pattani Opticians', category: 'Luxury Eyewear & Optical Storefront',
+          desc: 'High-end optical boutique storefront featuring frame customizers, prescription lens inputs, and responsive filtering.',
+          link: 'https://pattaniopticians.in/?srsltid=AfmBOorg65ox4ZZi08j1sUgTduIdTnXRLT8VYcePh5UZk1qblytuRgWm', tags: ['Shopify Liquid', 'Tailwind', 'Cart Drawer JS', 'Search API'] },
+        { title: 'The Souled Store (Men)', category: 'High-Volume Fashion D2C',
+          desc: 'Massive scale pop-culture apparel ecosystem with lightning-fast catalog navigation, sizing advisors, and flash-sale optimization.',
+          link: 'https://www.thesouledstore.com/men', tags: ['Shopify Plus', 'React Components', 'Algolia Search', 'Instant Checkout'] }
+      ]
+    },
+    {
+      id: 'wordpress-cms', roomNumber: 'ROOM 03', title: 'WordPress & Custom CMS Architecture',
+      short: 'WordPress', subtitle: 'Custom PHP Themes, ACF Pro & Headless WP',
+      side: -1, signTitle: 'ROOM 03 · WORDPRESS',
+      narration: '"Room 03: WordPress architectures, custom PHP and booking engines."',
+      artTheme: 'wordpress', artTitle: 'CMS BLUEPRINT ATELIER', artSubtitle: 'WordPress Core • ACF Pro • Automated Booking Engine', artAccent: '#21759B',
+      projects: [
+        { title: '13 Maxi Cabs', category: 'Fleet Dispatch & Automated Booking',
+          desc: 'Automated taxi booking portal with dynamic fare calculations, automated driver dispatching, and flight-tracking coordination.',
+          link: 'https://13maxicabs.com', tags: ['WordPress', 'Custom PHP Engine', 'Google Distance Matrix', 'Payment Gateway'] },
+        { title: 'Puffin Packaging', category: 'Eco-Friendly Insulation Packaging',
+          desc: 'Sustainable cold-chain packaging manufacturer platform featuring bespoke bulk dimension calculation tools and corporate B2B checkout.',
+          link: 'http://puffinpackaging.co.uk/', tags: ['WordPress', 'WooCommerce', 'Custom B2B Calculator', 'Lighthouse 98+'] }
+      ]
+    },
+    {
+      id: 'fullstack-systems', roomNumber: 'ROOM 04', title: 'Full Stack Systems & Client Work',
+      short: 'Full Stack', subtitle: 'Node.js, PostgreSQL, Docker & Bespoke WebGL',
+      side: 1, signTitle: 'ROOM 04 · FULL STACK',
+      narration: '"Room 04: full-stack systems, scalable APIs and direct client work."',
+      artTheme: 'fullstack', artTitle: 'FULL STACK COMMAND HUB', artSubtitle: 'Docker • PostgreSQL • Prisma • Microservices', artAccent: '#2E9E4F',
+      projects: [
+        { title: 'Cloud Telemetry & Client Dispatch Engine', category: 'Full Stack / PostgreSQL / Docker / Next.js',
+          desc: 'High-throughput client management infrastructure with real-time audit logs, automated invoicing, and role-based access control.',
+          link: 'https://bristolententerprisesautopartsstore.com/', tags: ['Next.js 14', 'PostgreSQL', 'Docker', 'Prisma', 'Tailwind CSS' , 'React' , 'node.js'] },
+        { title: 'Kartik Dhiman Direct Dispatch Terminal', category: 'Freelance & Contract Commissions',
+          desc: 'A website for traveller how are looking for great deal and opportunities to explore the world, or full-stack web platforms.',
+          link: 'https://glittery-custard-54a011.netlify.app/', tags: ['Next.js', 'React', 'node.js' , 'Tailwind CSS' , 'html'] }
+      ]
+    }
+  ];
+  const NARR = {
+    home: '"Walk forward along the gallery. Four doors await."',
+    about: '"A few words about the person holding the pencil."',
+    faq: '"Questions, answered at the end of the hall."',
+    contact: '"You made it to the last door. Say hello."'
+  };
+
+  /* =====================================================================
+     DOM BUILD — room sections + hand-drawn card art
+     ===================================================================== */
+  function artSVG(theme, accent, colored) {
+    const ink = '#2a2826';
+    const fill = colored ? accent : 'url(#hatch)';
+    const fo = colored ? '.62' : '1';
+    const st = `stroke="${ink}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"`;
+    let g = '';
+    if (theme === 'ai') {
+      const L = [[60, [40, 95, 150]], [160, [22, 68, 118, 168]], [260, [58, 132]]];
+      for (let a = 0; a < L.length - 1; a++) L[a][1].forEach(y1 => L[a + 1][1].forEach(y2 => g += `<line x1="${L[a][0]}" y1="${y1}" x2="${L[a + 1][0]}" y2="${y2}" ${st} stroke-width="1" opacity=".55"/>`));
+      L.forEach(([x, ys]) => ys.forEach(y => g += `<circle cx="${x}" cy="${y}" r="13" fill="${fill}" fill-opacity="${fo}" ${st}/>`));
+    } else if (theme === 'shopify') {
+      g += `<path d="M112 70 L210 70 L224 164 L98 164 Z" fill="${fill}" fill-opacity="${fo}" ${st}/>`;
+      g += `<path d="M138 72 C138 28 186 28 186 72" fill="none" ${st}/>`;
+      g += `<circle cx="150" cy="104" r="4" fill="${ink}"/><circle cx="176" cy="104" r="4" fill="${ink}"/>`;
+      g += `<path d="M232 40 l28 0 l10 18 l-10 18 l-28 0 z" fill="${fill}" fill-opacity="${fo}" ${st}/><circle cx="240" cy="58" r="3" fill="${ink}"/>`;
+      g += `<path d="M44 120 q18 -30 30 0 q14 28 30 -8" fill="none" ${st} stroke-width="1.4"/>`;
+    } else if (theme === 'wordpress') {
+      g += `<rect x="38" y="22" width="244" height="146" fill="var(--paper)" ${st}/>`;
+      g += `<line x1="38" y1="46" x2="282" y2="46" ${st}/>`;
+      [52, 66, 80].forEach(x => g += `<circle cx="${x}" cy="34" r="4" fill="${ink}"/>`);
+      g += `<rect x="50" y="58" width="62" height="98" fill="${fill}" fill-opacity="${fo}" ${st}/>`;
+      g += `<rect x="124" y="58" width="72" height="48" fill="${fill}" fill-opacity="${fo}" ${st}/><rect x="206" y="58" width="64" height="48" fill="${fill}" fill-opacity="${fo}" ${st}/>`;
+      [118, 130, 142].forEach((y, i) => g += `<line x1="124" y1="${y}" x2="${270 - i * 36}" y2="${y}" ${st} stroke-width="1.6"/>`);
+    } else {
+      [[60, 'M60 56 v32'], [60, 'M60 92 v32'], [60, '']].forEach(() => { });
+      const cyl = (cy) => `<path d="M30 ${cy} v34 a40 13 0 0 0 80 0 v-34" fill="${fill}" fill-opacity="${fo}" ${st}/><ellipse cx="70" cy="${cy}" rx="40" ry="13" fill="${fill}" fill-opacity="${fo}" ${st}/>`;
+      g += cyl(120) + cyl(86) + cyl(52);
+      g += `<rect x="150" y="30" width="136" height="120" fill="${ink}" fill-opacity=".92" ${st}/>`;
+      [52, 72, 92, 112].forEach((y, i) => g += `<line x1="164" y1="${y}" x2="${164 + [70, 96, 52, 84][i]}" y2="${y}" stroke="${colored ? accent : '#f9f7f2'}" stroke-width="3" stroke-linecap="round"/>`);
+      g += `<path d="M164 132 l8 6 l-8 6" fill="none" stroke="${colored ? accent : '#f9f7f2'}" stroke-width="2.4" stroke-linecap="round"/>`;
+    }
+    return `<svg viewBox="0 0 320 190" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+      <defs><pattern id="hatch" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="7" stroke="#2a2826" stroke-width="1.1" opacity=".55"/></pattern></defs>
+      <g filter="url(#wobble)">${g}</g></svg>`;
+  }
+
+  const roomsHost = document.getElementById('rooms');
+  CHAMBERS.forEach((c, i) => {
+    const s = document.createElement('section');
+    s.id = 'room-' + (i + 1);
+    s.dataset.s = 'projects';
+    s.dataset.room = i;
+    s.className = 'sec room ' + (c.side < 0 ? 'door-left' : 'door-right');
+    s.innerHTML = `
+      <div class="panel sk reveal">
+        <div class="head-row"><span class="badge">${c.roomNumber} // INTERIOR ARCHIVE</span><span class="hand">door on your ${c.side < 0 ? 'left ↖' : 'right ↗'}</span></div>
+        <h2>${c.title}</h2>
+        <p class="sub">${c.subtitle}</p>
+        <div class="cards">
+          ${c.projects.map(p => `
+            <article class="card">
+              <div class="art" aria-hidden="true">
+                <div class="base">${artSVG(c.artTheme, c.artAccent, false)}</div>
+                <div class="color">${artSVG(c.artTheme, c.artAccent, true)}</div>
+                <span class="hint">paint me ✎</span>
+              </div>
+              <div class="card-body">
+                <span class="cat">${p.category}</span>
+                <h3>${p.title}</h3>
+                <p>${p.desc}</p>
+                <div class="tags">${p.tags.map(t => `<span>${t}</span>`).join('')}</div>
+                <a class="visit" href="${p.link}" target="_blank" rel="noopener noreferrer">Visit live site <span>↗</span></a>
+              </div>
+            </article>`).join('')}
+        </div>
+      </div>`;
+    roomsHost.appendChild(s);
+  });
+  // base layer is positioned absolutely like the color layer
+  document.querySelectorAll('.art .base, .art .color').forEach(el => { el.style.position = 'absolute'; el.style.inset = '0'; });
+
+  /* paint-reveal on hover (touch: reveal as the card scrolls into view) */
+  document.querySelectorAll('.art').forEach(art => {
+    const col = art.querySelector('.color');
+    col.style.setProperty('--r', '1px');
+    art.addEventListener('pointermove', e => {
+      const r = art.getBoundingClientRect();
+      col.style.setProperty('--x', (e.clientX - r.left) + 'px');
+      col.style.setProperty('--y', (e.clientY - r.top) + 'px');
+    });
+    art.addEventListener('pointerenter', e => {
+      if (e.pointerType === 'touch') return;
+      gsap.to(col, { '--r': '150px', duration: .55, ease: 'power3.out' });
+    });
+    art.addEventListener('pointerleave', e => {
+      if (e.pointerType === 'touch') return;
+      gsap.to(col, { '--r': '1px', duration: .6, ease: 'power3.inOut' });
+    });
+  });
+  if (matchMedia('(hover: none)').matches) {
+    const io = new IntersectionObserver(es => es.forEach(en => {
+      const col = en.target.querySelector('.color');
+      col.style.setProperty('--x', '50%'); col.style.setProperty('--y', '50%');
+      gsap.to(col, { '--r': en.isIntersecting ? '320px' : '1px', duration: 1.1, ease: 'power2.out' });
+    }), { threshold: .6 });
+    document.querySelectorAll('.art').forEach(a => io.observe(a));
+  }
+
+  /* panel reveal + nav highlight + narration */
+  const reveals = document.querySelectorAll('.reveal');
+  const rio = new IntersectionObserver(es => es.forEach(en => { if (en.isIntersecting) en.target.classList.add('in'); }), { threshold: .12 });
+  reveals.forEach(r => rio.observe(r));
+
+  const sections = [...document.querySelectorAll('main section, main footer')];
+  const navLinks = [...document.querySelectorAll('.nav a')];
+  const narrEl = document.getElementById('narr');
+  let lastNarr = '';
+  function updateActive() {
+    const mid = innerHeight / 2;
+    let best = null, bd = 1e9;
+    sections.forEach(s => {
+      const r = s.getBoundingClientRect();
+      const d = Math.abs((r.top + r.height / 2) - mid);
+      if (r.top < mid && r.bottom > mid) { best = s; bd = 0; } else if (d < bd) { best = s; bd = d; }
+    });
+    if (!best) return;
+    navLinks.forEach(a => a.classList.toggle('on', a.dataset.s === best.dataset.s));
+    const txt = best.dataset.room !== undefined ? CHAMBERS[+best.dataset.room].narration : (NARR[best.dataset.s] || '');
+    if (txt && txt !== lastNarr) {
+      lastNarr = txt;
+      gsap.to(narrEl, { opacity: 0, duration: .15, onComplete: () => { narrEl.textContent = txt; gsap.to(narrEl, { opacity: 1, duration: .3 }); } });
+    }
+  }
+
+  /* IST clock */
+  const clockEl = document.getElementById('clock');
+  const fmt = new Intl.DateTimeFormat([], { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+  const tick = () => { clockEl.textContent = fmt.format(new Date()); };
+  setInterval(tick, 1000); tick();
+
+  /* =====================================================================
+     PAPER TEAR INTRO
+     ===================================================================== */
+  const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const tear = document.getElementById('tear');
+  const tpl = document.getElementById('tear-tpl').innerHTML;
+  tear.querySelectorAll('.content').forEach(c => c.innerHTML = tpl);
+  (function jaggedEdge() {
+    // identical torn line shared by both halves so they fit together
+    const pts = []; let seed = 11;
+    const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+    for (let x = 0; x <= 100; x += 1.6) pts.push([Math.min(x, 100), 50 + (rnd() - .5) * 5 + Math.sin(x * .35) * 1.2]);
+    pts[pts.length - 1][0] = 100;
+    const edge = pts.map(p => `${p[0].toFixed(2)}% ${p[1].toFixed(2)}%`);
+    const top = `polygon(0 0, 100% 0, ${[...edge].reverse().join(', ')})`;
+    const bot = `polygon(${edge.join(', ')}, 100% 100%, 0 100%)`;
+    tear.querySelector('.top .sheet').style.clipPath = top;
+    tear.querySelector('.top .content').style.clipPath = top;
+    tear.querySelector('.bot .sheet').style.clipPath = bot;
+    tear.querySelector('.bot .content').style.clipPath = bot;
+  })();
+
+  let torn = false;
+  function tearOpen() {
+    if (torn) return; torn = true;
+    requestGyro();
+    const done = () => {
+      tear.remove();
+      document.body.classList.remove('locked');
+      gsap.from('.hero-in > *', { y: 30, opacity: 0, duration: .9, stagger: .09, ease: 'power3.out' });
+      if (window.__gl) window.__gl.intro();
+    };
+    if (reduceMotion) { gsap.to(tear, { opacity: 0, duration: .4, onComplete: done }); return; }
+    const top = tear.querySelector('.top'), bot = tear.querySelector('.bot');
+    const tl = gsap.timeline({ onComplete: done });
+    tl.to([top, bot], { x: () => gsap.utils.random(-5, 5), duration: .05, repeat: 7, yoyo: true, ease: 'none' })
+      .to(top, { yPercent: -108, rotation: -2.2, transformOrigin: '10% 100%', duration: 1.35, ease: 'power3.in' }, '>')
+      .to(bot, { yPercent: 108, rotation: 1.6, transformOrigin: '90% 0%', duration: 1.35, ease: 'power3.in' }, '<');
+    if (window.__gl) window.__gl.introStart();
+  }
+  tear.addEventListener('click', tearOpen);
+  window.addEventListener('keydown', e => { if (!torn && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); tearOpen(); } });
+
+  /* gyroscope (mobile) — iOS needs a permission request from a user gesture */
+  const gyro = { on: false, x: 0, y: 0 };
+  function requestGyro() {
+    const attach = () => {
+      window.addEventListener('deviceorientation', e => {
+        if (e.gamma == null) return;
+        gyro.on = true;
+        gyro.x = Math.max(-1, Math.min(1, e.gamma / 28));
+        gyro.y = Math.max(-1, Math.min(1, ((e.beta || 0) - 50) / 28));
+      });
+    };
+    try {
+      if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+        DeviceOrientationEvent.requestPermission().then(r => { if (r === 'granted') attach(); }).catch(() => {});
+      } else if ('DeviceOrientationEvent' in window && matchMedia('(pointer: coarse)').matches) attach();
+    } catch (e) {}
+  }
+
+  /* auto-walk button */
+  let walking = false;
+  const walkBtn = document.getElementById('walk');
+  walkBtn.addEventListener('click', () => { walking = !walking; walkBtn.textContent = walking ? 'Halt ❚❚' : 'Auto-walk ▶'; });
+  ['wheel', 'touchstart', 'keydown'].forEach(ev => window.addEventListener(ev, e => {
+    if (walking && !(ev === 'keydown' && e.key === 'Enter')) { walking = false; walkBtn.textContent = 'Auto-walk ▶'; }
+  }, { passive: true }));
+
+  /* smooth anchor scroll */
+  document.querySelectorAll('a[href^="#"]').forEach(a => a.addEventListener('click', e => {
+    const t = document.querySelector(a.getAttribute('href'));
+    if (!t) return;
+    e.preventDefault();
+    const y = t.getBoundingClientRect().top + scrollY - Math.max(0, (innerHeight - t.offsetHeight) / 2);
+    const o = { y: scrollY };
+    gsap.to(o, { y: Math.max(0, y), duration: reduceMotion ? 0 : 1.6, ease: 'power2.inOut', onUpdate: () => scrollTo(0, o.y) });
+  }));
+
+  /* email action & copy toast */
+  const emailBtn = document.getElementById('email-btn');
+  const toastEl = document.getElementById('toast-msg');
+  let toastTimer = null;
+  function triggerToast(msg) {
+    if (!toastEl) return;
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { toastEl.classList.remove('show'); }, 3200);
+  }
+  if (emailBtn) {
+    emailBtn.addEventListener('click', (e) => {
+      const email = 'kartikdhiman337@gmail.com';
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(email).catch(() => {});
+      }
+      triggerToast('✓ Email copied: ' + email);
+      const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+      if (!isMobile) {
+        e.preventDefault();
+        const gmail = 'https://mail.google.com/mail/?view=cm&fs=1&to=' + encodeURIComponent(email) + '&su=' + encodeURIComponent('Project Inquiry — Kartik Dhiman');
+        window.open(gmail, '_blank');
+      }
+    });
+  }
+
+  /* =====================================================================
+     WEBGL — hand-drawn pencil corridor
+     ===================================================================== */
+  (function () {
+    const canvas = document.getElementById('gl');
+    let renderer;
+    try {
+      renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+    } catch (e) {
+      document.body.classList.add('no-webgl'); canvas.style.display = 'none';
+      window.addEventListener('scroll', updateActive, { passive: true }); updateActive();
+      return;
+    }
+
+    const PAPER = 0xf9f7f2, INK = 0x2a2826;
+    const W = 8.5, H = 6.8, FW = 3.6, FH = 5.3;
+    const START = 6, TRAVEL = 150;
+    const Z_NEAR = 16, Z_FAR = START - TRAVEL - 50;
+
+    renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+    renderer.setSize(innerWidth, innerHeight);
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(PAPER);
+    scene.fog = new THREE.Fog(PAPER, 9, 80);
+    const camera = new THREE.PerspectiveCamera(54, innerWidth / innerHeight, .1, 220);
+    const fovFor = () => (innerWidth / innerHeight < 1 ? 80 : 54);
+    camera.fov = fovFor(); camera.updateProjectionMatrix();
+
+    /* ---------- pencil-sketch helper: jittering double strokes ---------- */
+    const sketches = [];
+    const hash = (x, y, z, s) => { const v = Math.sin(x * 12.9898 + y * 78.233 + z * 37.719 + s * 4.1414) * 43758.5453; return v - Math.floor(v); };
+    function sketch(parent, polys, o = {}) {
+      const seg = o.seg || 1.1, passes = o.passes || 2, jit = o.jit ?? .03, op = o.opacity ?? .85;
+      const pts = [];
+      polys.forEach(poly => {
+        for (let i = 0; i < poly.length - 1; i++) {
+          const a = poly[i], b = poly[i + 1];
+          const n = Math.max(1, Math.ceil(a.distanceTo(b) / seg));
+          for (let k = 0; k < n; k++) pts.push(a.clone().lerp(b, k / n), a.clone().lerp(b, (k + 1) / n));
+        }
+      });
+      const made = [];
+      for (let p = 0; p < passes; p++) {
+        const geo = new THREE.BufferGeometry();
+        geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(pts.length * 3), 3));
+        const mat = new THREE.LineBasicMaterial({ color: o.color ?? INK, transparent: true, opacity: op * (p ? .5 : 1) });
+        const ls = new THREE.LineSegments(geo, mat);
+        ls.frustumCulled = false;
+        ls.userData = { pts, jit: jit * (1 + p * .9), pass: p };
+        applyBoil(ls, 0);
+        parent.add(ls); sketches.push(ls); made.push(ls);
+      }
+      return made;
+    }
+    function applyBoil(ls, t) {
+      const { pts, jit, pass } = ls.userData, a = ls.geometry.attributes.position.array, s = t + pass * 13.7;
+      for (let i = 0; i < pts.length; i++) {
+        const p = pts[i];
+        a[i * 3] = p.x + (hash(p.x, p.y, p.z, s) - .5) * jit * 2;
+        a[i * 3 + 1] = p.y + (hash(p.x, p.y, p.z, s + 1.3) - .5) * jit * 2;
+        a[i * 3 + 2] = p.z + (hash(p.x, p.y, p.z, s + 2.7) - .5) * jit * 2;
+      }
+      ls.geometry.attributes.position.needsUpdate = true;
+    }
+    const V = (x, y, z) => new THREE.Vector3(x, y, z);
+    const rectPoly = (x, y, w, h, z) => [V(x, y, z), V(x + w, y, z), V(x + w, y + h, z), V(x, y + h, z), V(x, y, z)];
+    const circPoly = (cx, cy, r, z, n = 14) => Array.from({ length: n + 1 }, (_, i) => V(cx + Math.cos(i / n * 6.2832) * r, cy + Math.sin(i / n * 6.2832) * r, z));
+    function boxEdges(w, h, d, pos) {
+      const g = new THREE.EdgesGeometry(new THREE.BoxGeometry(w, h, d)); const a = g.attributes.position.array; const out = [];
+      for (let i = 0; i < a.length; i += 6) out.push([V(a[i] + pos.x, a[i + 1] + pos.y, a[i + 2] + pos.z), V(a[i + 3] + pos.x, a[i + 4] + pos.y, a[i + 5] + pos.z)]);
+      return out;
+    }
+
+    /* ---------- procedural paper textures ---------- */
+    function hatchTexture(w, h, kind) {
+      const c = document.createElement('canvas'); c.width = w; c.height = h;
+      const x = c.getContext('2d');
+      x.fillStyle = '#f9f7f2'; x.fillRect(0, 0, w, h);
+      x.lineCap = 'round';
+      const N = kind === 'wall' ? 950 : 800;
+      for (let i = 0; i < N; i++) {
+        const t = Math.pow(Math.random(), kind === 'wall' ? 2.4 : 1.4);
+        const yy = kind === 'wall' ? h * (1 - t) : Math.random() * h;
+        const xx = Math.random() * w, len = 14 + Math.random() * 46;
+        x.strokeStyle = `rgba(42,40,38,${.04 + Math.random() * (kind === 'wall' ? .13 : .08)})`;
+        x.lineWidth = .7 + Math.random() * .9;
+        x.beginPath(); x.moveTo(xx, yy); x.lineTo(xx + len * .7, yy - len * .7); x.stroke();
+      }
+      if (kind === 'wall') { // faint top shading
+        for (let i = 0; i < 300; i++) {
+          const yy = Math.random() * h * .1, xx = Math.random() * w;
+          x.strokeStyle = `rgba(42,40,38,${.03 + Math.random() * .08})`; x.lineWidth = .8;
+          x.beginPath(); x.moveTo(xx, yy); x.lineTo(xx + 26, yy - 26); x.stroke();
+        }
+      }
+      for (let i = 0; i < 5000; i++) { x.fillStyle = `rgba(60,50,35,${Math.random() * .05})`; x.fillRect(Math.random() * w, Math.random() * h, 1.4, 1.4); }
+      const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = 4;
+      return t;
+    }
+    const TILE = 16;
+    const wallTex = hatchTexture(1024, 435, 'wall');
+    wallTex.repeat.set(1 / TILE, 1 / H);
+    const floorTex = hatchTexture(512, 1024, 'floor');
+    const wallMat = new THREE.MeshBasicMaterial({ map: wallTex, side: THREE.DoubleSide });
+    const floorMat = new THREE.MeshBasicMaterial({ map: floorTex });
+
+    const LEN = Z_NEAR - Z_FAR;
+    floorTex.repeat.set(1, LEN / TILE);
+    const floor = new THREE.Mesh(new THREE.PlaneGeometry(W, LEN), floorMat);
+    floor.rotation.x = -Math.PI / 2; floor.position.set(0, 0, (Z_NEAR + Z_FAR) / 2); scene.add(floor);
+    const ceilTex = floorTex.clone(); ceilTex.needsUpdate = true; ceilTex.repeat.set(1, LEN / TILE);
+    const ceil = new THREE.Mesh(new THREE.PlaneGeometry(W, LEN), new THREE.MeshBasicMaterial({ map: ceilTex }));
+    ceil.rotation.x = Math.PI / 2; ceil.position.set(0, H, (Z_NEAR + Z_FAR) / 2); scene.add(ceil);
+
+    /* ---------- walls with real door openings ---------- */
+    const doors = [];
+    let wallL, wallR;
+    function buildWalls() {
+      [wallL, wallR].forEach(w => { if (w) { scene.remove(w); w.geometry.dispose(); } });
+      const make = side => {
+        const shape = new THREE.Shape();
+        shape.moveTo(0, 0); shape.lineTo(LEN, 0); shape.lineTo(LEN, H); shape.lineTo(0, H); shape.closePath();
+        doors.filter(d => d.side === side).forEach(d => {
+          const uc = side < 0 ? Z_NEAR - d.z : d.z - Z_FAR;
+          const hole = new THREE.Path();
+          hole.moveTo(uc - FW / 2, .03); hole.lineTo(uc + FW / 2, .03); hole.lineTo(uc + FW / 2, FH); hole.lineTo(uc - FW / 2, FH); hole.closePath();
+          shape.holes.push(hole);
+        });
+        const m = new THREE.Mesh(new THREE.ShapeGeometry(shape), wallMat);
+        if (side < 0) { m.position.set(-W / 2, 0, Z_NEAR); m.rotation.y = Math.PI / 2; }
+        else { m.position.set(W / 2, 0, Z_FAR); m.rotation.y = -Math.PI / 2; }
+        scene.add(m); return m;
+      };
+      wallL = make(-1); wallR = make(1);
+    }
+
+    /* ---------- corridor pencil lines ---------- */
+    let corridorSketch = [];
+    function buildCorridorLines() {
+      corridorSketch.forEach(l => { scene.remove(l); l.geometry.dispose(); const i = sketches.indexOf(l); if (i > -1) sketches.splice(i, 1); });
+      const polys = [];
+      const along = (x, y) => polys.push([V(x, y, Z_NEAR), V(x, y, Z_FAR)]);
+      along(-W / 2, .02); along(W / 2, .02); along(-W / 2, H); along(W / 2, H);
+      along(-W / 6, .02); along(W / 6, .02); along(-1.2, H); along(1.2, H);
+      // rails & baseboards split around door openings
+      [[-1, -W / 2 + .01], [1, W / 2 - .01]].forEach(([side, x]) => {
+        [2.1, .38].forEach(y => {
+          const gaps = doors.filter(d => d.side === side).map(d => [d.z - FW / 2 - .5, d.z + FW / 2 + .5]).sort((a, b) => b[0] - a[0]);
+          let cur = Z_NEAR;
+          gaps.forEach(g => { if (cur > g[1]) polys.push([V(x, y, cur), V(x, y, g[1])]); cur = g[0]; });
+          polys.push([V(x, y, cur), V(x, y, Z_FAR)]);
+        });
+      });
+      // arch ribs
+      for (let z = Z_NEAR - 4; z > Z_FAR; z -= 12) {
+        if (doors.some(d => Math.abs(d.z - z) < 3.2)) continue;
+        polys.push([V(-W / 2 + .01, .02, z), V(-W / 2 + .01, H, z), V(W / 2 - .01, H, z), V(W / 2 - .01, .02, z)]);
+      }
+      // floor planks
+      for (let z = Z_NEAR; z > Z_FAR; z -= 3.5) polys.push([V(-W / 2, .02, z), V(W / 2, .02, z)]);
+      corridorSketch = sketch(scene, polys, { seg: 2.2, passes: 2, jit: .045, opacity: .7 });
+    }
+
+    /* ---------- hand-lettered door signs ---------- */
+    function signTexture(text) {
+      const c = document.createElement('canvas'); c.width = 768; c.height = 220;
+      const x = c.getContext('2d');
+      x.clearRect(0, 0, 768, 220);
+      x.fillStyle = '#fbf9f4'; x.fillRect(10, 10, 748, 200);
+      x.strokeStyle = '#1f1e1c'; x.lineWidth = 7; x.strokeRect(10, 10, 748, 200);
+      x.lineWidth = 2; x.strokeRect(24, 24, 720, 172);
+      x.fillStyle = '#b93826'; x.fillRect(44, 38, 230, 34);
+      x.fillStyle = '#fff'; x.font = '700 20px "JetBrains Mono", monospace'; x.fillText('DOORWAY ACCESS', 56, 62);
+      x.fillStyle = '#1f1e1c'; x.font = '800 58px Syne, sans-serif'; x.fillText(text, 44, 138);
+      x.fillStyle = '#b93826'; x.font = '700 36px Caveat, cursive'; x.fillText('click the door to peek inside ➔', 44, 182);
+      const t = new THREE.CanvasTexture(c); return t;
+    }
+
+    /* ---------- posters that sketch themselves ---------- */
+    const PW = 512, PH = 716;
+    function mulberry(a) { return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+    function posterShapes(theme) {
+      const R = mulberry(theme.length * 977 + theme.charCodeAt(0));
+      const out = [];
+      const wob = (pts, closed) => {
+        const r = [];
+        const P = closed ? [...pts, pts[0]] : pts;
+        for (let i = 0; i < P.length - 1; i++) {
+          const [ax, ay] = P[i], [bx, by] = P[i + 1]; const n = Math.max(1, Math.ceil(Math.hypot(bx - ax, by - ay) / 16));
+          for (let k = 0; k < n; k++) r.push([ax + (bx - ax) * k / n + (R() - .5) * 2.4, ay + (by - ay) * k / n + (R() - .5) * 2.4]);
+        }
+        r.push(P[P.length - 1]); return r;
+      };
+      const add = (pts, closed, fill) => out.push({ pts: wob(pts, closed), fill: !!fill, closed });
+      const rect = (x, y, w, h, fill) => add([[x, y], [x + w, y], [x + w, y + h], [x, y + h]], true, fill);
+      const circ = (cx, cy, r, fill) => add(Array.from({ length: 16 }, (_, i) => [cx + Math.cos(i / 16 * 6.283) * r, cy + Math.sin(i / 16 * 6.283) * r]), true, fill);
+      rect(22, 22, PW - 44, PH - 44); rect(32, 32, PW - 64, PH - 64);
+      if (theme === 'ai') {
+        const L = [[100, [110, 220, 330]], [256, [80, 170, 260, 350]], [412, [140, 290]]];
+        for (let a = 0; a < 2; a++) L[a][1].forEach(y1 => L[a + 1][1].forEach(y2 => add([[L[a][0], y1], [L[a + 1][0], y2]], false)));
+        L.forEach(([x, ys]) => ys.forEach(y => circ(x, y, 24, true)));
+      } else if (theme === 'shopify') {
+        add([[150, 150], [362, 150], [392, 370], [120, 370]], true, true);
+        add([[200, 154], [200, 90], [312, 90], [312, 154]], false);
+        circ(214, 230, 7, false); circ(298, 230, 7, false);
+        rect(70, 70, 70, 50, true); rect(380, 80, 60, 60, true);
+      } else if (theme === 'wordpress') {
+        rect(70, 80, 372, 290); add([[70, 124], [442, 124]], false);
+        circ(92, 102, 7, false); circ(116, 102, 7, false); circ(140, 102, 7, false);
+        rect(86, 142, 100, 210, true); rect(202, 142, 110, 94, true); rect(326, 142, 100, 94, true);
+        add([[202, 262], [420, 262]], false); add([[202, 292], [380, 292]], false); add([[202, 322], [400, 322]], false);
+      } else {
+        [[330, 60], [250, 60], [170, 60]].forEach(([cy, cx]) => {
+          add([[cx, cy], [cx, cy + 56], [cx + 120, cy + 56], [cx + 120, cy]], false);
+          add([[cx, cy], [cx + 60, cy - 20], [cx + 120, cy]], false, true);
+        });
+        rect(300, 120, 140, 230, true);
+        add([[316, 160], [400, 160]], false); add([[316, 200], [424, 200]], false); add([[316, 240], [380, 240]], false);
+      }
+      return out;
+    }
+    function wrap(ctx, text, maxW) {
+      const words = text.split(' '), lines = []; let cur = '';
+      words.forEach(w => { const t = cur ? cur + ' ' + w : w; if (ctx.measureText(t).width > maxW && cur) { lines.push(cur); cur = w; } else cur = t; });
+      lines.push(cur); return lines;
+    }
+    function drawPoster(d, p) {
+      const ctx = d.pctx, c = d.chamber;
+      ctx.clearRect(0, 0, PW, PH);
+      ctx.fillStyle = '#fbf9f4'; ctx.fillRect(0, 0, PW, PH);
+      const shapes = d.shapes, wash = Math.max(0, Math.min(1, (p - .5) / .5));
+      ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+      if (wash > 0) {
+        ctx.globalAlpha = .55 * wash; ctx.fillStyle = c.artAccent;
+        shapes.forEach(s => { if (!s.fill) return; ctx.beginPath(); s.pts.forEach((q, i) => i ? ctx.lineTo(q[0], q[1]) : ctx.moveTo(q[0], q[1])); ctx.closePath(); ctx.fill(); });
+        ctx.globalAlpha = 1;
+      }
+      ctx.strokeStyle = '#1f1e1c';
+      const total = shapes.length, drawn = Math.min(total, (p / .65) * total);
+      for (let i = 0; i < Math.ceil(drawn); i++) {
+        const s = shapes[i], frac = Math.min(1, drawn - i); const n = Math.max(2, Math.floor(s.pts.length * frac));
+        ctx.lineWidth = i < 2 ? 4 : 3;
+        ctx.beginPath(); for (let k = 0; k < n; k++) k ? ctx.lineTo(s.pts[k][0], s.pts[k][1]) : ctx.moveTo(s.pts[k][0], s.pts[k][1]); ctx.stroke();
+      }
+      const ta = Math.max(0, Math.min(1, (p - .7) / .3));
+      if (ta > 0) {
+        ctx.globalAlpha = ta; ctx.fillStyle = '#1f1e1c'; ctx.textAlign = 'center';
+        ctx.font = '800 34px Syne, sans-serif'; wrap(ctx, c.artTitle, 400).forEach((l, i) => ctx.fillText(l, PW / 2, 446 + i * 38));
+        ctx.fillStyle = '#b93826'; ctx.font = '700 13px "JetBrains Mono", monospace';
+        wrap(ctx, c.artSubtitle, 400).forEach((l, i) => ctx.fillText(l, PW / 2, 540 + i * 20));
+        ctx.fillStyle = '#3b3835'; ctx.font = '700 30px Caveat, cursive'; ctx.fillText('handcrafted · clean semantics', PW / 2, 612);
+        ctx.font = '700 12px "JetBrains Mono", monospace'; ctx.fillStyle = '#1f1e1c'; ctx.fillText('KARTIK DHIMAN · 2026', PW / 2, 664);
+        ctx.globalAlpha = 1;
+      }
+      d.ptex.needsUpdate = true;
+    }
+
+    /* ---------- door assemblies ---------- */
+    const leafMeshes = [];
+    const paperBasic = c => new THREE.MeshBasicMaterial({ color: c });
+    CHAMBERS.forEach((chamber, i) => {
+      const isLeft = chamber.side < 0;
+      const group = new THREE.Group();
+      group.position.x = isLeft ? -W / 2 : W / 2;
+      group.rotation.y = isLeft ? Math.PI / 2 : -Math.PI / 2;
+      scene.add(group);
+
+      // frame jambs (paper blocks + pencil edges)
+      const frameLines = [];
+      [[FW + .8, .4, .5, 0, FH + .2, 0], [.4, FH, .5, -FW / 2 - .2, FH / 2, 0], [.4, FH, .5, FW / 2 + .2, FH / 2, 0]].forEach(([w, h, d, x, y, z]) => {
+        const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), paperBasic(0xece7da)); m.position.set(x, y, z); group.add(m);
+        boxEdges(w, h, d, V(x, y, z)).forEach(e => frameLines.push(e));
+      });
+
+      // room interior
+      const shell = new THREE.Mesh(new THREE.BoxGeometry(FW + 4.5, FH + .8, 5.6), new THREE.MeshBasicMaterial({ color: 0xf1ede3, side: THREE.BackSide }));
+      shell.position.set(0, (FH + .8) / 2, -2.85); group.add(shell);
+      boxEdges(FW + 4.5, FH + .8, 5.6, V(0, (FH + .8) / 2, -2.85)).forEach(e => frameLines.push(e));
+      // interior floor boards (pencil)
+      for (let z = -.6; z > -5.5; z -= 1) frameLines.push([V(-(FW + 4.5) / 2, .03, z), V((FW + 4.5) / 2, .03, z)]);
+
+      // poster
+      const pc = document.createElement('canvas'); pc.width = PW; pc.height = PH;
+      const ptex = new THREE.CanvasTexture(pc);
+      // poster hangs on the interior wall that faces you as you pass the door
+      const sgn = isLeft ? 1 : -1;
+      const pg = new THREE.Group(); pg.position.set(sgn * 4.0, 3.1, -2.9); pg.rotation.y = -sgn * Math.PI / 2; group.add(pg);
+      const poster = new THREE.Mesh(new THREE.PlaneGeometry(3.4, 3.4 * PH / PW), new THREE.MeshBasicMaterial({ map: ptex }));
+      pg.add(poster);
+      sketch(pg, boxEdges(3.6, 3.4 * PH / PW + .2, .1, V(0, 0, -.06)), { seg: .9, passes: 2, jit: .02, opacity: .85 });
+      sketch(group, frameLines.map(e => e), { seg: .9, passes: 2, jit: .022, opacity: .8 });
+
+      // door leaf on hinge
+      const pivot = new THREE.Group(); pivot.position.set(-FW / 2 + .02, 0, .05); group.add(pivot);
+      const lw = FW - .04, lh = FH - .02;
+      const leaf = new THREE.Mesh(new THREE.BoxGeometry(lw, lh, .12), paperBasic(0xfdfbf6));
+      leaf.position.set(lw / 2, lh / 2 + .02, 0); pivot.add(leaf); leaf.userData.door = i; leafMeshes.push(leaf);
+      const leafLines = [];
+      boxEdges(lw, lh, .12, V(lw / 2, lh / 2 + .02, 0)).forEach(e => leafLines.push(e));
+      leafLines.push(rectPoly(.35, .45, lw - .7, 1.9, .07), rectPoly(.35, 2.65, lw - .7, 2.2, .07), circPoly(lw - .5, 2.45, .13, .08), [V(lw - .5, 2.45, .08), V(lw - 1.05, 2.45, .08)]);
+      // wood-grain scribbles
+      for (let k = 0; k < 7; k++) { const y = .5 + k * .7; leafLines.push([V(.5, y, .075), V(lw * (.35 + (k % 3) * .15), y + .05, .075)]); }
+      sketch(pivot, leafLines, { seg: .8, passes: 2, jit: .02, opacity: .85 });
+      const wash = new THREE.Mesh(new THREE.PlaneGeometry(lw - .1, lh - .1), new THREE.MeshBasicMaterial({ color: new THREE.Color(chamber.artAccent), transparent: true, opacity: 0, depthWrite: false }));
+      wash.position.set(lw / 2, lh / 2 + .02, .064); pivot.add(wash);
+
+      // sign
+      const sign = new THREE.Mesh(new THREE.PlaneGeometry(3.6, 3.6 * 220 / 768), new THREE.MeshBasicMaterial({ transparent: true }));
+      sign.position.set(0, FH + .95, .3); group.add(sign);
+
+      const d = { i, side: chamber.side, chamber, group, pivot, wash, sign, z: 0, open: false, ajar: 0, pctx: pc.getContext('2d'), ptex, shapes: posterShapes(chamber.artTheme), progress: { v: 0 }, angle: { v: 0 } };
+      drawPoster(d, 0);
+      doors.push(d);
+    });
+    function paintSigns() { doors.forEach(d => { const t = signTexture(d.chamber.signTitle); d.sign.material.map = t; d.sign.material.needsUpdate = true; }); }
+
+    function setDoor(d, open) {
+      if (d.open === open) return; d.open = open;
+      gsap.to(d.angle, { v: open ? 1.65 : 0, duration: open ? 1.3 : .9, ease: 'power2.inOut' });
+      gsap.to(d.wash.material, { opacity: open ? .26 : 0, duration: 1.2 });
+      if (open) gsap.to(d.progress, { v: 1, duration: 3.4, delay: .5, ease: 'none', onUpdate: () => drawPoster(d, d.progress.v) });
+    }
+
+    /* ---------- layout: map DOM sections -> corridor positions ---------- */
+    function layout() {
+      const max = Math.max(1, document.documentElement.scrollHeight - innerHeight);
+      doors.forEach(d => {
+        const sec = document.getElementById('room-' + (d.i + 1));
+        const center = sec.offsetTop + sec.offsetHeight / 2 - innerHeight / 2;
+        const frac = Math.max(0, Math.min(1, center / max));
+        d.z = START - frac * TRAVEL - 11;
+        d.group.position.z = d.z;
+      });
+      buildWalls(); buildCorridorLines();
+    }
+
+    /* ---------- camera rig: scroll + mouse parallax + gyro ---------- */
+    let progress = 0, target = 0, introPush = 0;
+    const mouse = { x: 0, y: 0, sx: 0, sy: 0 };
+    const maxScroll = () => Math.max(1, document.documentElement.scrollHeight - innerHeight);
+    const onScroll = () => { target = Math.max(0, Math.min(1, scrollY / maxScroll())); updateActive(); };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('pointermove', e => {
+      mouse.x = (e.clientX / innerWidth) * 2 - 1; mouse.y = (e.clientY / innerHeight) * 2 - 1;
+      pointerNDC.set(mouse.x, -mouse.y);
+    });
+
+    /* ---------- door interaction (hover to nudge, click to open) ---------- */
+    const ray = new THREE.Raycaster(), pointerNDC = new THREE.Vector2(9, 9);
+    let hoverDoor = -1;
+    function pickDoor() {
+      ray.setFromCamera(pointerNDC, camera);
+      const hit = ray.intersectObjects(leafMeshes, false)[0];
+      return hit ? hit.object.userData.door : -1;
+    }
+    window.addEventListener('click', e => {
+      if (e.target !== canvas) return;
+      pointerNDC.set((e.clientX / innerWidth) * 2 - 1, -(e.clientY / innerHeight) * 2 + 1);
+      const k = pickDoor(); if (k > -1) { doors[k].manual = true; setDoor(doors[k], !doors[k].open); }
+    });
+
+    window.addEventListener('resize', () => {
+      camera.aspect = innerWidth / innerHeight; camera.fov = fovFor(); camera.updateProjectionMatrix();
+      renderer.setSize(innerWidth, innerHeight); renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+      layout(); onScroll();
+    });
+
+    /* ---------- render loop ---------- */
+    let last = performance.now(), boilT = 0, boilClock = 0, started = false, bob = 0, frameCount = 0;
+    const look = new THREE.Vector3();
+    const locEl = document.getElementById('loc');
+    function frame(now) {
+      requestAnimationFrame(frame);
+      const dt = Math.min((now - last) / 1000, .1); last = now; frameCount++;
+      if (walking && !document.body.classList.contains('locked')) window.scrollBy(0, 150 * dt);
+      progress += (target - progress) * (1 - Math.exp(-dt * 4.2));
+      mouse.sx += (mouse.x - mouse.sx) * (1 - Math.exp(-dt * 3));
+      mouse.sy += (mouse.y - mouse.sy) * (1 - Math.exp(-dt * 3));
+      const mx = gyro.on ? gyro.x : mouse.sx, my = gyro.on ? gyro.y : mouse.sy;
+
+      const z = START - progress * TRAVEL + introPush;
+      if (frameCount % 6 === 0) locEl.textContent = (progress * TRAVEL).toFixed(1) + ' m';
+      bob = progress * TRAVEL * 1.7;
+      camera.position.set(mx * .55, 2.3 - my * .22 + Math.sin(bob) * .025, z);
+      // lean the gaze toward the nearest open door
+      let lean = 0;
+      doors.forEach(d => { const dz = z - d.z; if (dz > 0 && dz < 20) lean += d.side * (1 - dz / 20) * 3.2; });
+      look.set(mx * 2.6 + lean * .5, 2.2 - my * 1.1, z - 10);
+      camera.lookAt(look);
+
+      // doors: auto-open near, hover nudge
+      if (pointerNDC.x !== 9 && frameCount % 3 === 0) {
+        hoverDoor = pickDoor();
+        canvas.style.cursor = hoverDoor > -1 ? 'pointer' : 'default';
+      }
+      doors.forEach(d => {
+        const dz = z - d.z;
+        if (!d.manual) setDoor(d, dz > 2 && dz < 19);
+        else if (dz < -8 || dz > 30) d.manual = false;
+        d.ajar += (((hoverDoor === d.i && !d.open) ? .22 : 0) - d.ajar) * (1 - Math.exp(-dt * 8));
+        d.pivot.rotation.y = d.angle.v + d.ajar;
+      });
+
+      if (!reduceMotion) { boilClock += dt; if (boilClock > .12) { boilClock = 0; boilT++; sketches.forEach(s => applyBoil(s, boilT)); } }
+      renderer.render(scene, camera);
+    }
+
+    window.__gl = {
+      introStart() { introPush = 9; gsap.to(window.__gl, { duration: 0 }); const o = { v: 9 }; gsap.to(o, { v: 0, duration: 2.4, ease: 'power3.out', onUpdate: () => introPush = o.v }); },
+      intro() { }
+    };
+
+    layout();
+    onScroll();
+    requestAnimationFrame(frame);
+    // textures that use web-fonts get redrawn once fonts are in
+    const fontsReady = Promise.all(['700 36px Caveat', '800 58px Syne', '700 20px "JetBrains Mono"'].map(f => document.fonts.load(f).catch(() => {})));
+    fontsReady.then(() => document.fonts.ready).then(() => { paintSigns(); doors.forEach(d => drawPoster(d, d.progress.v)); layout(); onScroll(); });
+    paintSigns();
+    window.addEventListener('load', () => { layout(); onScroll(); });
+    setTimeout(() => { layout(); onScroll(); }, 1200);
+  })();
+  </script>
 </body>
 </html>
